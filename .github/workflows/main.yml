@@ -1,31 +1,46 @@
 name: Hourly Price Check
+
 on:
   schedule:
-    - cron: '*/5 * * * *' # This means "at the start of every hour"
-  workflow_dispatch: # Allows you to run it manually for testing
+    # GitHub's minimum limit is every 5 minutes. 
+    # Use '*/5 * * * *' for 5 mins, or '0 * * * *' for exactly once per hour.
+    - cron: '*/5 * * * *' 
+  workflow_dispatch: # Allows you to click "Run workflow" manually for testing
+
+permissions:
+  contents: write # Crucial: Allows the bot to save log.txt back to your repo
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    env:
+      # Forces the runner to use the new Node 24 environment immediately
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v5 # Latest version for Node 24
+
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v6 # Latest version for Node 24
         with:
           python-version: '3.10'
+
       - name: Install dependencies
         run: pip install requests
-     # ... (keep the top part the same until 'Run analysis')
+
       - name: Run analysis
         env:
+          # This pulls your API key from the "Secrets" you saved in Settings
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
         run: python tracker.py
 
       - name: Commit and Push the note
         run: |
           git config --global user.name "CryptoBot"
-          git config --global user.name "bot@github.com"
+          git config --global user.email "bot@github.com"
           git add log.txt
-          git commit -m "Update price log" || exit 0
+          # Only commit if there are changes, otherwise exit quietly
+          git commit -m "Update price log [skip ci]" || exit 0
           git push
