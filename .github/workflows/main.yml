@@ -1,7 +1,7 @@
 name: Hourly Price Check
 on:
   schedule:
-    - cron: '0 * * * *' # This means "at the start of every hour"
+    - cron: '*/5 * * * *' # This means "at the start of every hour"
   workflow_dispatch: # Allows you to run it manually for testing
 
 jobs:
