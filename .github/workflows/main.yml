@@ -16,7 +16,16 @@ jobs:
           python-version: '3.10'
       - name: Install dependencies
         run: pip install requests
+     # ... (keep the top part the same until 'Run analysis')
       - name: Run analysis
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
         run: python tracker.py
+
+      - name: Commit and Push the note
+        run: |
+          git config --global user.name "CryptoBot"
+          git config --global user.name "bot@github.com"
+          git add log.txt
+          git commit -m "Update price log" || exit 0
+          git push
